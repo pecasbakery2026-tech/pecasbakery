@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAppData } from '../context/AppDataContext';
-import { Download, Plus, DollarSign, Filter } from 'lucide-react';
+import { Download, Plus, Filter } from 'lucide-react';
 
 const Finance = () => {
   const { sales, expenses } = useAppData();

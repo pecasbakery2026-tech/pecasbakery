@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAppData } from '../context/AppDataContext';
 import type { Product, SaleItem } from '../types';
 import { ShoppingCart, Plus, Minus, Trash2, CheckCircle2 } from 'lucide-react';
@@ -75,7 +75,7 @@ const POS = () => {
             <div 
               key={p.id} 
               className="card" 
-              style={{ cursor: 'pointer', transition: 'var(--transition)', ':hover': { transform: 'translateY(-2px)' } }}
+              style={{ cursor: 'pointer', transition: 'var(--transition)' }}
               onClick={() => addToCart(p)}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>

@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { RawMaterial, Product, Sale, Expense, SaleItem } from '../types';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { RawMaterial, Product, Sale, Expense } from '../types';
 import { mockRawMaterials, mockProducts, mockSales, mockExpenses } from '../data/mockData';
 import { supabase, hasSupabaseConfig } from '../lib/supabase';
 
@@ -16,7 +16,7 @@ interface AppDataContextType {
 
 const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
 
-export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppDataProvider = ({ children }: { children: React.ReactNode }) => {
   const [rawMaterials, setRawMaterials] = useState<RawMaterial[]>(hasSupabaseConfig ? [] : mockRawMaterials);
   const [products, setProducts] = useState<Product[]>(hasSupabaseConfig ? [] : mockProducts);
   const [sales, setSales] = useState<Sale[]>(hasSupabaseConfig ? [] : mockSales);

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { User, Role } from '../types';
 
 interface AuthContextType {
@@ -10,7 +10,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleDemoRole = () => {
     if (!user) return;
-    const newRole = user.role === 'ADMIN' ? 'EMPLOYEE' : 'ADMIN';
+    const newRole: Role = user.role === 'ADMIN' ? 'EMPLOYEE' : 'ADMIN';
     const updatedUser = { ...user, role: newRole, name: newRole === 'ADMIN' ? 'Admin User' : 'Vendedor' };
     setUser(updatedUser);
     localStorage.setItem('pecas_auth', JSON.stringify(updatedUser));
