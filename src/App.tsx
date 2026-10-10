@@ -46,7 +46,7 @@ function App() {
   return (
     <AuthProvider>
       <AppDataProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <AppRoutes />
         </BrowserRouter>
       </AppDataProvider>
