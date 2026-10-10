@@ -18,6 +18,8 @@ CREATE TABLE products (
   estimatedCost NUMERIC NOT NULL DEFAULT 0,
   stock INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'Disponible',
+  assignedVendor TEXT,
+  vendorStock INTEGER DEFAULT 0,
   image TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
