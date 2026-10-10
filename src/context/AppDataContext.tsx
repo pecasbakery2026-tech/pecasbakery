@@ -170,6 +170,8 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     const newSale: Sale = { ...saleData, id: newSaleId, date };
     setSales(prev => [newSale, ...prev]);
     
+    // Deduct inventory
+    for (const item of saleData.items) {
       await updateProductStock(item.productId, item.quantity, isVendor);
     }
   };
