@@ -125,12 +125,13 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     if (!product) return;
     
     let updates: any = {};
+    const newStock = Math.max(0, product.stock - quantitySold);
+    const status = newStock === 0 ? 'Agotado' : 'Disponible';
+    
     if (isVendor) {
       const newVendorStock = Math.max(0, (product.vendorStock || 0) - quantitySold);
-      updates = { vendorstock: newVendorStock };
+      updates = { vendorstock: newVendorStock, stock: newStock, status };
     } else {
-      const newStock = Math.max(0, product.stock - quantitySold);
-      const status = newStock === 0 ? 'Agotado' : 'Disponible';
       updates = { stock: newStock, status };
     }
 
@@ -141,10 +142,14 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     setProducts(prev => prev.map(p => {
       if (p.id !== productId) return p;
       if (isVendor) {
-        return { ...p, vendorStock: Math.max(0, (p.vendorStock || 0) - quantitySold) };
+        return { 
+          ...p, 
+          vendorStock: Math.max(0, (p.vendorStock || 0) - quantitySold),
+          stock: newStock,
+          status
+        };
       } else {
-        const newStock = Math.max(0, p.stock - quantitySold);
-        return { ...p, stock: newStock, status: newStock === 0 ? 'Agotado' : 'Disponible' };
+        return { ...p, stock: newStock, status };
       }
     }));
   };
