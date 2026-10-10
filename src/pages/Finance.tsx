@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useAppData } from '../context/AppDataContext';
-import { Download, Plus, Filter } from 'lucide-react';
+import { Download, Plus, Filter, X } from 'lucide-react';
 
 const Finance = () => {
-  const { sales, expenses } = useAppData();
+  const { sales, expenses, addExpense } = useAppData();
   const [dateFilter, setDateFilter] = useState<'Hoy' | 'Semana' | 'Mes' | 'Todos'>('Todos');
   const [activeTab, setActiveTab] = useState<'sales' | 'expenses'>('sales');
+  
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [expenseData, setExpenseData] = useState({ description: '', amount: 0, category: 'Otros' });
 
   const filterByDate = (dateStr: string) => {
     if (dateFilter === 'Todos') return true;
@@ -104,7 +107,7 @@ const Finance = () => {
           </div>
           
           {activeTab === 'expenses' && (
-            <button className="btn btn-primary">
+            <button className="btn btn-primary" onClick={() => setIsExpenseModalOpen(true)}>
               <Plus size={18} /> Nuevo Gasto
             </button>
           )}
@@ -187,6 +190,72 @@ const Finance = () => {
           </table>
         )}
       </div>
+
+      {isExpenseModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card" style={{ width: '400px', maxWidth: '90%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0 }}>Registrar Nuevo Gasto</h3>
+              <button className="btn" onClick={() => setIsExpenseModalOpen(false)} style={{ padding: '0.25rem' }}><X size={18} /></button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Descripción</label>
+                <input 
+                  type="text" 
+                  placeholder="Ej. Recibo de luz"
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} 
+                  value={expenseData.description} 
+                  onChange={e => setExpenseData({...expenseData, description: e.target.value})} 
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Categoría</label>
+                  <select 
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} 
+                    value={expenseData.category} 
+                    onChange={e => setExpenseData({...expenseData, category: e.target.value})}
+                  >
+                    <option value="Alquiler">Alquiler</option>
+                    <option value="Servicios">Servicios</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Otros">Otros</option>
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Monto ($)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} 
+                    value={expenseData.amount} 
+                    onChange={e => setExpenseData({...expenseData, amount: parseFloat(e.target.value) || 0})} 
+                  />
+                </div>
+              </div>
+
+              <button 
+                className="btn btn-primary" 
+                style={{ width: '100%', marginTop: '1rem', padding: '0.75rem', justifyContent: 'center' }} 
+                onClick={async () => {
+                  if (expenseData.description && expenseData.amount > 0) {
+                    await addExpense(expenseData as any);
+                    setIsExpenseModalOpen(false);
+                    setExpenseData({ description: '', amount: 0, category: 'Otros' });
+                  } else {
+                    alert('Por favor llena la descripción y un monto mayor a 0');
+                  }
+                }}
+              >
+                Guardar Gasto
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
