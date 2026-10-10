@@ -11,9 +11,11 @@ const Dashboard = () => {
   const { sales, products, rawMaterials } = useAppData();
   const isAdmin = user?.role === 'ADMIN';
 
+  const filteredSales = isAdmin ? sales : sales.filter(s => s.sellerName === user?.name);
+  
   // KPIs calculations
-  const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
-  const totalCost = sales.reduce((sum, sale) => sum + sale.totalCost, 0);
+  const totalRevenue = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
+  const totalCost = filteredSales.reduce((sum, sale) => sum + sale.totalCost, 0);
   const netProfit = totalRevenue - totalCost;
   const margin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0';
 
@@ -25,7 +27,7 @@ const Dashboard = () => {
   });
 
   const trendData = last7Days.map(dateStr => {
-    const daySales = sales.filter(s => s.date.startsWith(dateStr));
+    const daySales = filteredSales.filter(s => s.date.startsWith(dateStr));
     return {
       date: dateStr.substring(5), // MM-DD
       ventas: daySales.reduce((sum, s) => sum + s.total, 0),
@@ -35,7 +37,7 @@ const Dashboard = () => {
 
   // Chart data: Category Distribution
   const categoryCount: Record<string, number> = {};
-  sales.forEach(sale => {
+  filteredSales.forEach(sale => {
     sale.items.forEach(item => {
       const product = products.find(p => p.id === item.productId);
       if (product) {
@@ -49,7 +51,8 @@ const Dashboard = () => {
 
   // Alerts
   const getDisplayStock = (p: any) => isAdmin ? p.stock : (p.vendorStock || 0);
-  const lowStockProducts = products.filter(p => getDisplayStock(p) <= 10);
+  const myProducts = isAdmin ? products : products.filter(p => p.assignedVendor === user?.name);
+  const lowStockProducts = myProducts.filter(p => getDisplayStock(p) <= 10);
   const lowStockRM = isAdmin ? rawMaterials.filter(rm => rm.stock <= rm.minStockAlert) : [];
 
   return (
@@ -73,7 +76,7 @@ const Dashboard = () => {
           </div>
           <div>
             <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.875rem' }}>Ventas Registradas</p>
-            <h3 style={{ margin: 0, fontSize: '1.5rem' }}>{sales.length}</h3>
+            <h3 style={{ margin: 0, fontSize: '1.5rem' }}>{filteredSales.length}</h3>
           </div>
         </div>
 

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Package, ShoppingCart, DollarSign, LogOut, UserCog, Menu, Settings as SettingsIcon, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, DollarSign, LogOut, Menu, Settings as SettingsIcon, ClipboardList } from 'lucide-react';
 
 const Layout = () => {
-  const { user, logout, toggleDemoRole } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -90,15 +90,6 @@ const Layout = () => {
             </div>
           </div>
           
-          <button 
-            onClick={toggleDemoRole}
-            className="btn" 
-            style={{ width: '100%', justifyContent: 'flex-start', padding: '0.75rem 1rem', color: 'var(--status-warning)', backgroundColor: 'rgba(255, 152, 0, 0.1)', marginBottom: '0.5rem' }}
-          >
-            <UserCog size={18} />
-            <span>Cambiar a {isAdmin ? 'Vendedor' : 'Admin'}</span>
-          </button>
-
           <button 
             onClick={handleLogout}
             className="btn" 

@@ -20,7 +20,10 @@ const Inventory = () => {
   const [prodFormData, setProdFormData] = useState({ name: '', category: categories[0]?.name || '', price: 0, estimatedCost: 0, stock: 0, status: 'Disponible' as 'Disponible' | 'Agotado', assignedVendor: '', vendorStock: 0, image: '' });
 
   const getDisplayStock = (p: Product) => isAdmin ? p.stock : (p.vendorStock || 0);
-  const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
+    (isAdmin || p.assignedVendor === user?.name)
+  );
   const filteredRM = rawMaterials.filter(rm => rm.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const tabStyle = (isActive: boolean) => ({

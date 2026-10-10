@@ -14,7 +14,10 @@ const POS = () => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const getDisplayStock = (p: Product) => isVendor ? (p.vendorStock || 0) : p.stock;
-  const availableProducts = products.filter(p => getDisplayStock(p) > 0);
+  const availableProducts = products.filter(p => 
+    getDisplayStock(p) > 0 && 
+    (!isVendor || p.assignedVendor === user?.name)
+  );
 
   const addToCart = (product: Product) => {
     setCart(prev => {
