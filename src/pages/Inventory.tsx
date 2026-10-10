@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAppData } from '../context/AppDataContext';
 import { useAuth } from '../context/AuthContext';
 import { Search, Plus, Edit2, Trash2, X } from 'lucide-react';
-import type { RawMaterial, Unit, Product, Category } from '../types';
+import type { RawMaterial, Unit, Product } from '../types';
 
 const Inventory = () => {
   const { rawMaterials, products, categories, employees, addRawMaterial, updateRawMaterial, deleteRawMaterial, addProduct, updateProduct, deleteProduct } = useAppData();
