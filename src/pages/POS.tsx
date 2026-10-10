@@ -3,20 +3,24 @@ import { useAppData } from '../context/AppDataContext';
 import type { Product, SaleItem } from '../types';
 import { ShoppingCart, Plus, Minus, Trash2, CheckCircle2 } from 'lucide-react';
 
+import { useAuth } from '../context/AuthContext';
 const POS = () => {
   const { products, addSale } = useAppData();
+  const { user } = useAuth();
+  const isVendor = user?.role === 'EMPLOYEE';
   const [cart, setCart] = useState<SaleItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<'Efectivo' | 'Transferencia' | 'Tarjeta'>('Efectivo');
   const [customerType, setCustomerType] = useState<'Mostrador' | 'Pedido especial' | 'Evento'>('Mostrador');
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const availableProducts = products.filter(p => p.stock > 0);
+  const getDisplayStock = (p: Product) => isVendor ? (p.vendorStock || 0) : p.stock;
+  const availableProducts = products.filter(p => getDisplayStock(p) > 0);
 
   const addToCart = (product: Product) => {
     setCart(prev => {
       const existing = prev.find(item => item.productId === product.id);
       if (existing) {
-        if (existing.quantity >= product.stock) return prev; // Cannot exceed stock
+        if (existing.quantity >= getDisplayStock(product)) return prev; // Cannot exceed stock
         return prev.map(item => 
           item.productId === product.id 
             ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.unitPrice }
@@ -31,7 +35,8 @@ const POS = () => {
     setCart(prev => prev.map(item => {
       if (item.productId === productId) {
         const product = products.find(p => p.id === productId);
-        const newQ = Math.max(1, Math.min(item.quantity + delta, product?.stock || 1));
+        const maxStock = product ? getDisplayStock(product) : 1;
+        const newQ = Math.max(1, Math.min(item.quantity + delta, maxStock));
         return { ...item, quantity: newQ, subtotal: newQ * item.unitPrice };
       }
       return item;
@@ -57,7 +62,7 @@ const POS = () => {
       totalCost,
       paymentMethod,
       customerType
-    });
+    }, isVendor);
     
     setCart([]);
     setShowSuccess(true);
@@ -83,7 +88,7 @@ const POS = () => {
                 <span style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>${p.price.toFixed(2)}</span>
               </div>
               <h4 style={{ marginBottom: '0.5rem' }}>{p.name}</h4>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted)' }}>Stock: {p.stock}</p>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted)' }}>Stock: {getDisplayStock(p)}</p>
             </div>
           ))}
         </div>

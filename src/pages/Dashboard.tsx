@@ -48,8 +48,9 @@ const Dashboard = () => {
   const COLORS = ['#8B5A2B', '#D2B48C', '#E8A317'];
 
   // Alerts
-  const lowStockProducts = products.filter(p => p.stock <= 10);
-  const lowStockRM = rawMaterials.filter(rm => rm.stock <= rm.minStockAlert);
+  const getDisplayStock = (p: any) => isAdmin ? p.stock : (p.vendorStock || 0);
+  const lowStockProducts = products.filter(p => getDisplayStock(p) <= 10);
+  const lowStockRM = isAdmin ? rawMaterials.filter(rm => rm.stock <= rm.minStockAlert) : [];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -172,13 +173,13 @@ const Dashboard = () => {
               <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', backgroundColor: 'rgba(244, 67, 54, 0.05)', borderLeft: '4px solid var(--status-danger)', borderRadius: '0 var(--radius-md) var(--radius-md) 0' }}>
                 <div>
                   <strong style={{ display: 'block' }}>Producto: {p.name}</strong>
-                  <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Stock actual: {p.stock} unidades</span>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Stock actual: {getDisplayStock(p)} unidades</span>
                 </div>
                 <span className="badge badge-danger">Reabastecer</span>
               </div>
             ))}
             
-            {lowStockRM.map(rm => (
+            {isAdmin && lowStockRM.map(rm => (
               <div key={rm.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', backgroundColor: 'rgba(255, 152, 0, 0.05)', borderLeft: '4px solid var(--status-warning)', borderRadius: '0 var(--radius-md) var(--radius-md) 0' }}>
                 <div>
                   <strong style={{ display: 'block' }}>Insumo: {rm.name}</strong>

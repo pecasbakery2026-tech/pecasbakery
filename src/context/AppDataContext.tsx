@@ -9,8 +9,8 @@ interface AppDataContextType {
   sales: Sale[];
   expenses: Expense[];
   loading: boolean;
-  addSale: (sale: Omit<Sale, 'id' | 'date'>) => Promise<void>;
-  updateProductStock: (productId: string, quantity: number) => Promise<void>;
+  addSale: (sale: Omit<Sale, 'id' | 'date'>, isVendor?: boolean) => Promise<void>;
+  updateProductStock: (productId: string, quantity: number, isVendor?: boolean) => Promise<void>;
   addExpense: (expense: Omit<Expense, 'id' | 'date'>) => Promise<void>;
   addRawMaterial: (rm: Omit<RawMaterial, 'id'>) => Promise<void>;
   updateRawMaterial: (id: string, rm: Partial<RawMaterial>) => Promise<void>;
@@ -68,6 +68,8 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
             estimatedCost: p.estimatedcost ?? p.estimatedCost ?? 0,
             stock: p.stock ?? 0,
             status: p.status,
+            assignedVendor: p.assignedvendor ?? p.assignedVendor,
+            vendorStock: p.vendorstock ?? p.vendorStock ?? 0,
             image: p.image
           })));
         }
@@ -103,21 +105,36 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     fetchData();
   }, []);
   
-  const updateProductStock = async (productId: string, quantitySold: number) => {
+  const updateProductStock = async (productId: string, quantitySold: number, isVendor: boolean = false) => {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
-    const newStock = Math.max(0, product.stock - quantitySold);
-    const status = newStock === 0 ? 'Agotado' : 'Disponible';
-
-    if (hasSupabaseConfig) {
-      await supabase.from('products').update({ stock: newStock, status }).eq('id', productId);
+    let updates: any = {};
+    if (isVendor) {
+      const newVendorStock = Math.max(0, (product.vendorStock || 0) - quantitySold);
+      updates = { vendorstock: newVendorStock };
+    } else {
+      const newStock = Math.max(0, product.stock - quantitySold);
+      const status = newStock === 0 ? 'Agotado' : 'Disponible';
+      updates = { stock: newStock, status };
     }
 
-    setProducts(prev => prev.map(p => p.id === productId ? { ...p, stock: newStock, status } : p));
+    if (hasSupabaseConfig) {
+      await supabase.from('products').update(updates).eq('id', productId);
+    }
+
+    setProducts(prev => prev.map(p => {
+      if (p.id !== productId) return p;
+      if (isVendor) {
+        return { ...p, vendorStock: Math.max(0, (p.vendorStock || 0) - quantitySold) };
+      } else {
+        const newStock = Math.max(0, p.stock - quantitySold);
+        return { ...p, stock: newStock, status: newStock === 0 ? 'Agotado' : 'Disponible' };
+      }
+    }));
   };
 
-  const addSale = async (saleData: Omit<Sale, 'id' | 'date'>) => {
+  const addSale = async (saleData: Omit<Sale, 'id' | 'date'>, isVendor: boolean = false) => {
     const date = new Date().toISOString();
     let newSaleId = `s_${Date.now()}`;
 
@@ -153,9 +170,7 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     const newSale: Sale = { ...saleData, id: newSaleId, date };
     setSales(prev => [newSale, ...prev]);
     
-    // Deduct inventory
-    for (const item of saleData.items) {
-      await updateProductStock(item.productId, item.quantity);
+      await updateProductStock(item.productId, item.quantity, isVendor);
     }
   };
 
@@ -230,6 +245,8 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
         estimatedcost: prodData.estimatedCost,
         stock: prodData.stock,
         status: prodData.status,
+        assignedvendor: prodData.assignedVendor,
+        vendorstock: prodData.vendorStock,
         image: prodData.image
       }).select().single();
       if (!error && data) newId = data.id;
@@ -242,7 +259,12 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     if (hasSupabaseConfig) {
       const mappedUpdates: any = { ...updates };
       if (updates.estimatedCost !== undefined) mappedUpdates.estimatedcost = updates.estimatedCost;
+      if (updates.assignedVendor !== undefined) mappedUpdates.assignedvendor = updates.assignedVendor;
+      if (updates.vendorStock !== undefined) mappedUpdates.vendorstock = updates.vendorStock;
+      
       delete mappedUpdates.estimatedCost;
+      delete mappedUpdates.assignedVendor;
+      delete mappedUpdates.vendorStock;
 
       await supabase.from('products').update(mappedUpdates).eq('id', id);
     }

@@ -27,6 +27,8 @@ export interface Product {
   estimatedCost: number;
   stock: number;
   status: 'Disponible' | 'Agotado';
+  assignedVendor?: string;
+  vendorStock?: number;
   image?: string;
 }
 

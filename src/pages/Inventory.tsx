@@ -17,8 +17,9 @@ const Inventory = () => {
   
   // Forms state
   const [rmFormData, setRmFormData] = useState({ name: '', unit: 'kg' as Unit, stock: 0, minStockAlert: 0, unitCost: 0 });
-  const [prodFormData, setProdFormData] = useState({ name: '', category: 'Galletas' as Category, price: 0, estimatedCost: 0, stock: 0, status: 'Disponible' as 'Disponible' | 'Agotado', image: '' });
+  const [prodFormData, setProdFormData] = useState({ name: '', category: 'Galletas' as Category, price: 0, estimatedCost: 0, stock: 0, status: 'Disponible' as 'Disponible' | 'Agotado', assignedVendor: '', vendorStock: 0, image: '' });
 
+  const getDisplayStock = (p: Product) => isAdmin ? p.stock : (p.vendorStock || 0);
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredRM = rawMaterials.filter(rm => rm.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -44,9 +45,9 @@ const Inventory = () => {
       }
     } else {
       if (item) {
-        setProdFormData({ name: item.name, category: item.category, price: item.price, estimatedCost: item.estimatedCost, stock: item.stock, status: item.status, image: item.image || '' });
+        setProdFormData({ name: item.name, category: item.category, price: item.price, estimatedCost: item.estimatedCost, stock: item.stock, status: item.status, assignedVendor: item.assignedVendor || '', vendorStock: item.vendorStock || 0, image: item.image || '' });
       } else {
-        setProdFormData({ name: '', category: 'Galletas', price: 0, estimatedCost: 0, stock: 0, status: 'Disponible', image: '' });
+        setProdFormData({ name: '', category: 'Galletas', price: 0, estimatedCost: 0, stock: 0, status: 'Disponible', assignedVendor: '', vendorStock: 0, image: '' });
       }
     }
     setIsModalOpen(true);
@@ -88,9 +89,11 @@ const Inventory = () => {
           <button style={tabStyle(activeTab === 'products')} onClick={() => setActiveTab('products')}>
             Productos Terminados
           </button>
-          <button style={tabStyle(activeTab === 'rawMaterials')} onClick={() => setActiveTab('rawMaterials')}>
-            Materia Prima
-          </button>
+          {isAdmin && (
+            <button style={tabStyle(activeTab === 'rawMaterials')} onClick={() => setActiveTab('rawMaterials')}>
+              Materia Prima
+            </button>
+          )}
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', flex: 1, justifyContent: 'flex-end' }}>
@@ -136,13 +139,13 @@ const Inventory = () => {
                   <td>${p.price.toFixed(2)}</td>
                   {isAdmin && <td>${p.estimatedCost.toFixed(2)}</td>}
                   <td>
-                    <span style={{ fontWeight: 600, color: p.stock <= 10 ? 'var(--status-danger)' : 'inherit' }}>
-                      {p.stock}
+                    <span style={{ fontWeight: 600, color: getDisplayStock(p) <= 10 ? 'var(--status-danger)' : 'inherit' }}>
+                      {getDisplayStock(p)}
                     </span>
                   </td>
                   <td>
-                    <span className={`badge ${p.stock > 0 ? 'badge-success' : 'badge-danger'}`}>
-                      {p.status}
+                    <span className={`badge ${getDisplayStock(p) > 0 ? 'badge-success' : 'badge-danger'}`}>
+                      {getDisplayStock(p) > 0 ? 'Disponible' : 'Agotado'}
                     </span>
                   </td>
                   {isAdmin && (
@@ -281,6 +284,20 @@ const Inventory = () => {
                     <div style={{ flex: 1 }}>
                       <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Stock Actual</label>
                       <input type="number" style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} value={prodFormData.stock} onChange={e => setProdFormData({...prodFormData, stock: parseFloat(e.target.value) || 0})} />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Vendedor Asignado</label>
+                      <select style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} value={prodFormData.assignedVendor} onChange={e => setProdFormData({...prodFormData, assignedVendor: e.target.value})}>
+                        <option value="">Sin Asignar</option>
+                        <option value="Vendedor 1">Vendedor 1</option>
+                        <option value="Vendedor 2">Vendedor 2</option>
+                      </select>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Stock del Vendedor</label>
+                      <input type="number" style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} value={prodFormData.vendorStock} onChange={e => setProdFormData({...prodFormData, vendorStock: parseFloat(e.target.value) || 0})} disabled={!prodFormData.assignedVendor} />
                     </div>
                   </div>
                 </>
