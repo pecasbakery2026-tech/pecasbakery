@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Package, ShoppingCart, DollarSign, LogOut, Cookie, UserCog, Menu } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, DollarSign, LogOut, Cookie, UserCog, Menu, Settings as SettingsIcon } from 'lucide-react';
 
 const Layout = () => {
   const { user, logout, toggleDemoRole } = useAuth();
@@ -59,10 +59,16 @@ const Layout = () => {
           </NavLink>
 
           {isAdmin && (
-            <NavLink to="/finance" style={({ isActive }) => navItemStyle(isActive)} onClick={() => setIsMobileMenuOpen(false)}>
-              <DollarSign size={20} />
-              <span>Finanzas</span>
-            </NavLink>
+            <>
+              <NavLink to="/finance" style={({ isActive }) => navItemStyle(isActive)} onClick={() => setIsMobileMenuOpen(false)}>
+                <DollarSign size={20} />
+                <span>Finanzas</span>
+              </NavLink>
+              <NavLink to="/settings" style={({ isActive }) => navItemStyle(isActive)} onClick={() => setIsMobileMenuOpen(false)}>
+                <SettingsIcon size={20} />
+                <span>Ajustes</span>
+              </NavLink>
+            </>
           )}
         </nav>
 

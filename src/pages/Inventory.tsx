@@ -5,7 +5,7 @@ import { Search, Plus, Edit2, Trash2, X } from 'lucide-react';
 import type { RawMaterial, Unit, Product, Category } from '../types';
 
 const Inventory = () => {
-  const { rawMaterials, products, addRawMaterial, updateRawMaterial, deleteRawMaterial, addProduct, updateProduct, deleteProduct } = useAppData();
+  const { rawMaterials, products, categories, employees, addRawMaterial, updateRawMaterial, deleteRawMaterial, addProduct, updateProduct, deleteProduct } = useAppData();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   
@@ -17,7 +17,7 @@ const Inventory = () => {
   
   // Forms state
   const [rmFormData, setRmFormData] = useState({ name: '', unit: 'kg' as Unit, stock: 0, minStockAlert: 0, unitCost: 0 });
-  const [prodFormData, setProdFormData] = useState({ name: '', category: 'Galletas' as Category, price: 0, estimatedCost: 0, stock: 0, status: 'Disponible' as 'Disponible' | 'Agotado', assignedVendor: '', vendorStock: 0, image: '' });
+  const [prodFormData, setProdFormData] = useState({ name: '', category: categories[0]?.name || '', price: 0, estimatedCost: 0, stock: 0, status: 'Disponible' as 'Disponible' | 'Agotado', assignedVendor: '', vendorStock: 0, image: '' });
 
   const getDisplayStock = (p: Product) => isAdmin ? p.stock : (p.vendorStock || 0);
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -47,7 +47,7 @@ const Inventory = () => {
       if (item) {
         setProdFormData({ name: item.name, category: item.category, price: item.price, estimatedCost: item.estimatedCost, stock: item.stock, status: item.status, assignedVendor: item.assignedVendor || '', vendorStock: item.vendorStock || 0, image: item.image || '' });
       } else {
-        setProdFormData({ name: '', category: 'Galletas', price: 0, estimatedCost: 0, stock: 0, status: 'Disponible', assignedVendor: '', vendorStock: 0, image: '' });
+        setProdFormData({ name: '', category: categories[0]?.name || '', price: 0, estimatedCost: 0, stock: 0, status: 'Disponible', assignedVendor: '', vendorStock: 0, image: '' });
       }
     }
     setIsModalOpen(true);
@@ -265,10 +265,10 @@ const Inventory = () => {
                   <div style={{ display: 'flex', gap: '1rem' }}>
                     <div style={{ flex: 1 }}>
                       <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Categoría</label>
-                      <select style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} value={prodFormData.category} onChange={e => setProdFormData({...prodFormData, category: e.target.value as Category})}>
-                        <option value="Galletas">Galletas</option>
-                        <option value="Brownies">Brownies</option>
-                        <option value="Packs">Packs</option>
+                      <select style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} value={prodFormData.category} onChange={e => setProdFormData({...prodFormData, category: e.target.value})}>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.name}>{cat.name}</option>
+                        ))}
                       </select>
                     </div>
                     <div style={{ flex: 1 }}>
@@ -291,8 +291,9 @@ const Inventory = () => {
                       <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Vendedor Asignado</label>
                       <select style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} value={prodFormData.assignedVendor} onChange={e => setProdFormData({...prodFormData, assignedVendor: e.target.value})}>
                         <option value="">Sin Asignar</option>
-                        <option value="Vendedor 1">Vendedor 1</option>
-                        <option value="Vendedor 2">Vendedor 2</option>
+                        {employees.map(emp => (
+                          <option key={emp.id} value={emp.name}>{emp.name}</option>
+                        ))}
                       </select>
                     </div>
                     <div style={{ flex: 1 }}>

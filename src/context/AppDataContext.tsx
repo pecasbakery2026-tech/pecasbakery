@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import type { RawMaterial, Product, Sale, Expense } from '../types';
+import type { RawMaterial, Product, Sale, Expense, Category, Employee } from '../types';
 import { mockRawMaterials, mockProducts, mockSales, mockExpenses } from '../data/mockData';
 import { supabase, hasSupabaseConfig } from '../lib/supabase';
 
@@ -8,6 +8,8 @@ interface AppDataContextType {
   products: Product[];
   sales: Sale[];
   expenses: Expense[];
+  categories: Category[];
+  employees: Employee[];
   loading: boolean;
   addSale: (sale: Omit<Sale, 'id' | 'date'>, isVendor?: boolean) => Promise<void>;
   updateProductStock: (productId: string, quantity: number, isVendor?: boolean) => Promise<void>;
@@ -18,6 +20,11 @@ interface AppDataContextType {
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
+  addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
+  addEmployee: (employee: Omit<Employee, 'id'>) => Promise<void>;
+  updateEmployee: (id: string, employee: Partial<Employee>) => Promise<void>;
+  deleteEmployee: (id: string) => Promise<void>;
 }
 
 const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
@@ -27,6 +34,8 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
   const [products, setProducts] = useState<Product[]>(hasSupabaseConfig ? [] : mockProducts);
   const [sales, setSales] = useState<Sale[]>(hasSupabaseConfig ? [] : mockSales);
   const [expenses, setExpenses] = useState<Expense[]>(hasSupabaseConfig ? [] : mockExpenses);
+  const [categories, setCategories] = useState<Category[]>(hasSupabaseConfig ? [] : [{ id: '1', name: 'Galletas' }, { id: '2', name: 'Brownies' }, { id: '3', name: 'Packs' }]);
+  const [employees, setEmployees] = useState<Employee[]>(hasSupabaseConfig ? [] : [{ id: '1', name: 'Vendedor 1', role: 'EMPLOYEE' }]);
   const [loading, setLoading] = useState(hasSupabaseConfig);
 
   useEffect(() => {
@@ -40,13 +49,17 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
           { data: prodData },
           { data: expData },
           { data: salesData },
-          { data: saleItemsData }
+          { data: saleItemsData },
+          { data: catData },
+          { data: empData }
         ] = await Promise.all([
           supabase.from('raw_materials').select('*'),
           supabase.from('products').select('*'),
           supabase.from('expenses').select('*'),
           supabase.from('sales').select('*'),
-          supabase.from('sale_items').select('*')
+          supabase.from('sale_items').select('*'),
+          supabase.from('categories').select('*'),
+          supabase.from('employees').select('*')
         ]);
 
         if (rmData) {
@@ -74,6 +87,8 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
           })));
         }
         if (expData) setExpenses(expData);
+        if (catData) setCategories(catData);
+        if (empData) setEmployees(empData);
         
         if (salesData && saleItemsData) {
           // Map items to sales
@@ -280,12 +295,53 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     setProducts(prev => prev.filter(p => p.id !== id));
   };
 
+  const addCategory = async (categoryData: Omit<Category, 'id'>) => {
+    let newId = `cat_${Date.now()}`;
+    if (hasSupabaseConfig) {
+      const { data, error } = await supabase.from('categories').insert(categoryData).select().single();
+      if (!error && data) newId = data.id;
+    }
+    setCategories(prev => [...prev, { ...categoryData, id: newId }]);
+  };
+
+  const deleteCategory = async (id: string) => {
+    if (hasSupabaseConfig) {
+      await supabase.from('categories').delete().eq('id', id);
+    }
+    setCategories(prev => prev.filter(c => c.id !== id));
+  };
+
+  const addEmployee = async (employeeData: Omit<Employee, 'id'>) => {
+    let newId = `emp_${Date.now()}`;
+    if (hasSupabaseConfig) {
+      const { data, error } = await supabase.from('employees').insert(employeeData).select().single();
+      if (!error && data) newId = data.id;
+    }
+    setEmployees(prev => [...prev, { ...employeeData, id: newId }]);
+  };
+
+  const updateEmployee = async (id: string, updates: Partial<Employee>) => {
+    if (hasSupabaseConfig) {
+      await supabase.from('employees').update(updates).eq('id', id);
+    }
+    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+  };
+
+  const deleteEmployee = async (id: string) => {
+    if (hasSupabaseConfig) {
+      await supabase.from('employees').delete().eq('id', id);
+    }
+    setEmployees(prev => prev.filter(e => e.id !== id));
+  };
+
   return (
     <AppDataContext.Provider value={{
       rawMaterials,
       products,
       sales,
       expenses,
+      categories,
+      employees,
       loading,
       addSale,
       updateProductStock,
@@ -295,7 +351,12 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
       deleteRawMaterial,
       addProduct,
       updateProduct,
-      deleteProduct
+      deleteProduct,
+      addCategory,
+      deleteCategory,
+      addEmployee,
+      updateEmployee,
+      deleteEmployee
     }}>
       {children}
     </AppDataContext.Provider>

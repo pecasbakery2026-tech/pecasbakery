@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
 import POS from './pages/POS';
 import Finance from './pages/Finance';
+import Settings from './pages/Settings';
 
 const ProtectedRoute = ({ children, requireAdmin }: { children: React.ReactNode, requireAdmin?: boolean }) => {
   const { user } = useAuth();
@@ -33,6 +34,7 @@ const AppRoutes = () => {
         <Route path="pos" element={<POS />} />
         <Route path="inventory" element={<Inventory />} />
         <Route path="finance" element={<ProtectedRoute requireAdmin><Finance /></ProtectedRoute>} />
+        <Route path="settings" element={<ProtectedRoute requireAdmin><Settings /></ProtectedRoute>} />
       </Route>
     </Routes>
   );

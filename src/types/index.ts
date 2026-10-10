@@ -8,7 +8,17 @@ export interface User {
 }
 
 export type Unit = 'g' | 'kg' | 'pzas' | 'ml' | 'l';
-export type Category = 'Galletas' | 'Brownies' | 'Packs';
+
+export interface Employee {
+  id: string;
+  name: string;
+  role: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+}
 
 export interface RawMaterial {
   id: string;
@@ -22,7 +32,7 @@ export interface RawMaterial {
 export interface Product {
   id: string;
   name: string;
-  category: Category;
+  category: string;
   price: number;
   estimatedCost: number;
   stock: number;

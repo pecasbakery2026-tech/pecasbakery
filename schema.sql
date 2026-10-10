@@ -76,3 +76,32 @@ CREATE POLICY "Permitir todo a todos temporalmente" ON products FOR ALL USING (t
 CREATE POLICY "Permitir todo a todos temporalmente" ON sales FOR ALL USING (true);
 CREATE POLICY "Permitir todo a todos temporalmente" ON sale_items FOR ALL USING (true);
 CREATE POLICY "Permitir todo a todos temporalmente" ON expenses FOR ALL USING (true);
+
+-- Tabla de Categorías (Nueva)
+CREATE TABLE categories (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Tabla de Empleados/Usuarios (Nueva)
+CREATE TABLE employees (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'EMPLOYEE',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Insertar Categorías y Empleados de prueba
+INSERT INTO categories (id, name) VALUES 
+('1d50c765-9876-4321-abcd-1234567890ab', 'Galletas'),
+('2d50c765-9876-4321-abcd-1234567890ac', 'Brownies'),
+('3d50c765-9876-4321-abcd-1234567890ad', 'Packs');
+
+INSERT INTO employees (id, name, role) VALUES 
+('9f80b654-1234-5678-abcd-0987654321fe', 'Vendedor 1', 'EMPLOYEE');
+
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Permitir todo a todos temporalmente" ON categories FOR ALL USING (true);
+CREATE POLICY "Permitir todo a todos temporalmente" ON employees FOR ALL USING (true);
