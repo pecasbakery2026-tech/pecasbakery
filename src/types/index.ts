@@ -13,6 +13,8 @@ export interface Employee {
   id: string;
   name: string;
   role: string;
+  username?: string;
+  password?: string;
 }
 
 export interface Category {

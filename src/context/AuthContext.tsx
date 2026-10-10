@@ -3,7 +3,7 @@ import type { User, Role } from '../types';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, role: Role) => void;
+  login: (username: string, name: string, role: Role) => void;
   logout: () => void;
   toggleDemoRole: () => void;
 }
@@ -24,11 +24,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  const login = (email: string, role: Role) => {
+  const login = (username: string, name: string, role: Role) => {
     const newUser: User = {
       id: Math.random().toString(36).substring(7),
-      name: email.split('@')[0],
-      email,
+      name: name,
+      email: username, // repurpose email field as username for now to avoid refactoring User type everywhere
       role,
     };
     setUser(newUser);

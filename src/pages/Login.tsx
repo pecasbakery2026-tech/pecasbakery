@@ -1,22 +1,34 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useAppData } from '../context/AppDataContext';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 
 const Login = () => {
   const { login } = useAuth();
+  const { employees } = useAppData();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isDemo, setIsDemo] = useState(true);
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
     if (isDemo) {
-      // In demo mode, email determines role for simplicity
-      const role = email.includes('admin') ? 'ADMIN' : 'EMPLOYEE';
-      login(email || (role === 'ADMIN' ? 'admin@pecas.com' : 'vendedor@pecas.com'), role);
+      const role = username.includes('admin') ? 'ADMIN' : 'EMPLOYEE';
+      login(username || 'admin', role === 'ADMIN' ? 'Admin User' : 'Vendedor', role);
       navigate('/');
+    } else {
+      const emp = employees.find(e => e.username === username && e.password === password);
+      if (emp) {
+        login(emp.username || emp.name, emp.name, emp.role as any);
+        navigate('/');
+      } else {
+        setError('Usuario o contraseña incorrectos');
+      }
     }
   };
 
@@ -32,15 +44,20 @@ const Login = () => {
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {error && (
+            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(244, 67, 54, 0.1)', color: 'var(--status-danger)', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem', textAlign: 'center' }}>
+              {error}
+            </div>
+          )}
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>Correo Electrónico</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>Nombre de Usuario</label>
             <input 
-              type="email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@pecas.com o user@pecas.com"
+              type="text" 
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="vendedor1"
               style={{ width: '100%' }}
-              required={!isDemo}
+              required
             />
           </div>
           <div>
@@ -73,8 +90,8 @@ const Login = () => {
           <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', fontSize: '0.875rem' }}>
             <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Accesos de prueba:</p>
             <ul style={{ paddingLeft: '1.5rem', color: 'var(--text-secondary)' }}>
-              <li><strong>Admin:</strong> admin@pecas.com</li>
-              <li><strong>Vendedor:</strong> vendedor@pecas.com</li>
+              <li><strong>Admin:</strong> admin</li>
+              <li><strong>Vendedor:</strong> vendedor</li>
             </ul>
           </div>
         )}

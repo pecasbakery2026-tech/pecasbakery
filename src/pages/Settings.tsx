@@ -11,7 +11,7 @@ const Settings = () => {
   // Employee Form
   const [isEmpModalOpen, setIsEmpModalOpen] = useState(false);
   const [editingEmp, setEditingEmp] = useState<any>(null);
-  const [empFormData, setEmpFormData] = useState({ name: '', role: 'EMPLOYEE' });
+  const [empFormData, setEmpFormData] = useState({ name: '', role: 'EMPLOYEE', username: '', password: '' });
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,22 +25,26 @@ const Settings = () => {
     if (!empFormData.name.trim()) return;
     
     if (editingEmp) {
-      await updateEmployee(editingEmp.id, empFormData);
+      const updates: any = { ...empFormData };
+      if (!updates.password) {
+        delete updates.password; // Don't overwrite if password is empty
+      }
+      await updateEmployee(editingEmp.id, updates);
     } else {
       await addEmployee(empFormData);
     }
     setIsEmpModalOpen(false);
     setEditingEmp(null);
-    setEmpFormData({ name: '', role: 'EMPLOYEE' });
+    setEmpFormData({ name: '', role: 'EMPLOYEE', username: '', password: '' });
   };
 
   const openEmpModal = (emp: any = null) => {
     if (emp) {
       setEditingEmp(emp);
-      setEmpFormData({ name: emp.name, role: emp.role || 'EMPLOYEE' });
+      setEmpFormData({ name: emp.name, role: emp.role || 'EMPLOYEE', username: emp.username || '', password: '' });
     } else {
       setEditingEmp(null);
-      setEmpFormData({ name: '', role: 'EMPLOYEE' });
+      setEmpFormData({ name: '', role: 'EMPLOYEE', username: '', password: '' });
     }
     setIsEmpModalOpen(true);
   };
@@ -145,6 +149,30 @@ const Settings = () => {
                 />
               </div>
               <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Nombre de Usuario (Login)</label>
+                <input 
+                  type="text" 
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} 
+                  value={empFormData.username} 
+                  onChange={e => setEmpFormData({...empFormData, username: e.target.value})} 
+                  placeholder="ej. vendedor1"
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                  Contraseña {editingEmp && '(Dejar en blanco para no cambiar)'}
+                </label>
+                <input 
+                  type="password" 
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} 
+                  value={empFormData.password} 
+                  onChange={e => setEmpFormData({...empFormData, password: e.target.value})} 
+                  placeholder="••••••••"
+                  required={!editingEmp}
+                />
+              </div>
+              <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Rol</label>
                 <select 
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} 
@@ -154,9 +182,6 @@ const Settings = () => {
                   <option value="EMPLOYEE">Vendedor / Empleado</option>
                   <option value="ADMIN">Administrador</option>
                 </select>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                  Nota: Por ahora, este rol es solo informativo y para asignación de inventario. El inicio de sesión real sigue controlándose desde el menú lateral.
-                </p>
               </div>
 
               <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', padding: '0.75rem', justifyContent: 'center' }}>

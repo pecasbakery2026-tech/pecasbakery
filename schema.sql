@@ -90,6 +90,8 @@ CREATE TABLE employees (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   name TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'EMPLOYEE',
+  username TEXT,
+  password TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
