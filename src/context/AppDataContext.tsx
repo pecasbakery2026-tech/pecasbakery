@@ -46,21 +46,46 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
           supabase.from('sale_items').select('*')
         ]);
 
-        if (rmData) setRawMaterials(rmData);
-        if (prodData) setProducts(prodData);
+        if (rmData) {
+          setRawMaterials(rmData.map(rm => ({
+            id: rm.id,
+            name: rm.name,
+            unit: rm.unit,
+            stock: rm.stock,
+            minStockAlert: rm.minstockalert ?? rm.minStockAlert ?? 0,
+            unitCost: rm.unitcost ?? rm.unitCost ?? 0
+          })));
+        }
+        if (prodData) {
+          setProducts(prodData.map(p => ({
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            price: p.price ?? 0,
+            estimatedCost: p.estimatedcost ?? p.estimatedCost ?? 0,
+            stock: p.stock ?? 0,
+            status: p.status,
+            image: p.image
+          })));
+        }
         if (expData) setExpenses(expData);
         
         if (salesData && saleItemsData) {
           // Map items to sales
           const mappedSales = salesData.map(sale => ({
-            ...sale,
+            id: sale.id,
+            date: sale.date,
+            total: sale.total,
+            totalCost: sale.totalcost ?? sale.totalCost ?? 0,
+            paymentMethod: sale.paymentmethod ?? sale.paymentMethod,
+            customerType: sale.customertype ?? sale.customerType,
             items: saleItemsData
               .filter(item => item.sale_id === sale.id)
               .map(item => ({
                 productId: item.product_id,
                 quantity: item.quantity,
-                unitPrice: item.unit_price,
-                subtotal: item.subtotal
+                unitPrice: item.unit_price ?? 0,
+                subtotal: item.subtotal ?? 0
               }))
           }));
           setSales(mappedSales);
@@ -99,9 +124,9 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
         .from('sales')
         .insert({ 
           total: saleData.total, 
-          totalCost: saleData.totalCost, 
-          paymentMethod: saleData.paymentMethod, 
-          customerType: saleData.customerType 
+          totalcost: saleData.totalCost, 
+          paymentmethod: saleData.paymentMethod, 
+          customertype: saleData.customerType 
         })
         .select()
         .single();
@@ -158,7 +183,13 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
   const addRawMaterial = async (rmData: Omit<RawMaterial, 'id'>) => {
     let newId = `rm_${Date.now()}`;
     if (hasSupabaseConfig) {
-      const { data, error } = await supabase.from('raw_materials').insert(rmData).select().single();
+      const { data, error } = await supabase.from('raw_materials').insert({
+        name: rmData.name,
+        unit: rmData.unit,
+        stock: rmData.stock,
+        minstockalert: rmData.minStockAlert,
+        unitcost: rmData.unitCost
+      }).select().single();
       if (!error && data) newId = data.id;
     }
     const newRm: RawMaterial = { ...rmData, id: newId };
@@ -167,7 +198,14 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
 
   const updateRawMaterial = async (id: string, updates: Partial<RawMaterial>) => {
     if (hasSupabaseConfig) {
-      await supabase.from('raw_materials').update(updates).eq('id', id);
+      const mappedUpdates: any = { ...updates };
+      if (updates.minStockAlert !== undefined) mappedUpdates.minstockalert = updates.minStockAlert;
+      if (updates.unitCost !== undefined) mappedUpdates.unitcost = updates.unitCost;
+      
+      delete mappedUpdates.minStockAlert;
+      delete mappedUpdates.unitCost;
+
+      await supabase.from('raw_materials').update(mappedUpdates).eq('id', id);
     }
     setRawMaterials(prev => prev.map(rm => rm.id === id ? { ...rm, ...updates } : rm));
   };
