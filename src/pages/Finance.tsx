@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAppData } from '../context/AppDataContext';
 import { Download, Plus, Filter, X } from 'lucide-react';
+import SaleDetailsModal from '../components/SaleDetailsModal';
+import type { Sale } from '../types';
 
 const Finance = () => {
   const { sales, expenses, addExpense } = useAppData();
@@ -9,6 +11,7 @@ const Finance = () => {
   
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [expenseData, setExpenseData] = useState({ description: '', amount: 0, category: 'Otros' });
+  const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
 
   const filterByDate = (dateStr: string) => {
     if (dateFilter === 'Todos') return true;
@@ -136,7 +139,7 @@ const Finance = () => {
               {filteredSales.map(s => {
                 const profit = s.total - s.totalCost;
                 return (
-                  <tr key={s.id}>
+                  <tr key={s.id} onClick={() => setSelectedSale(s)} style={{ cursor: 'pointer' }} className="table-row-hover">
                     <td style={{ fontWeight: 500 }}>{s.sellerName || 'Admin'}</td>
                     <td>{new Date(s.date).toLocaleDateString()} {new Date(s.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                     <td>
@@ -190,6 +193,10 @@ const Finance = () => {
           </table>
         )}
       </div>
+      
+      {selectedSale && (
+        <SaleDetailsModal sale={selectedSale} onClose={() => setSelectedSale(null)} />
+      )}
 
       {isExpenseModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
