@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Package, ShoppingCart, DollarSign, LogOut, Cookie, UserCog, Menu, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, DollarSign, LogOut, UserCog, Menu, Settings as SettingsIcon } from 'lucide-react';
 
 const Layout = () => {
   const { user, logout, toggleDemoRole } = useAuth();
