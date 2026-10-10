@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAppData } from '../context/AppDataContext';
 import { Download, Plus, Filter, X } from 'lucide-react';
 import SaleDetailsModal from '../components/SaleDetailsModal';
+import EditSaleModal from '../components/EditSaleModal';
 import type { Sale } from '../types';
 
 const Finance = () => {
@@ -12,6 +13,7 @@ const Finance = () => {
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [expenseData, setExpenseData] = useState({ description: '', amount: 0, category: 'Otros' });
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+  const [editingSale, setEditingSale] = useState<Sale | null>(null);
 
   const filterByDate = (dateStr: string) => {
     if (dateFilter === 'Todos') return true;
@@ -194,8 +196,22 @@ const Finance = () => {
         )}
       </div>
       
-      {selectedSale && (
-        <SaleDetailsModal sale={selectedSale} onClose={() => setSelectedSale(null)} />
+      {selectedSale && !editingSale && (
+        <SaleDetailsModal 
+          sale={selectedSale} 
+          onClose={() => setSelectedSale(null)} 
+          onEdit={() => setEditingSale(selectedSale)}
+        />
+      )}
+
+      {editingSale && (
+        <EditSaleModal
+          sale={editingSale}
+          onClose={() => {
+            setEditingSale(null);
+            setSelectedSale(null);
+          }}
+        />
       )}
 
       {isExpenseModalOpen && (

@@ -5,9 +5,10 @@ import { useAppData } from '../context/AppDataContext';
 interface SaleDetailsModalProps {
   sale: Sale;
   onClose: () => void;
+  onEdit?: () => void;
 }
 
-const SaleDetailsModal = ({ sale, onClose }: SaleDetailsModalProps) => {
+const SaleDetailsModal = ({ sale, onClose, onEdit }: SaleDetailsModalProps) => {
   const { products } = useAppData();
 
   return (
@@ -15,7 +16,12 @@ const SaleDetailsModal = ({ sale, onClose }: SaleDetailsModalProps) => {
       <div className="card" style={{ width: '500px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
           <h3 style={{ margin: 0 }}>Detalles de la Venta</h3>
-          <button className="btn" onClick={onClose} style={{ padding: '0.25rem' }}><X size={18} /></button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {onEdit && (
+              <button className="btn btn-secondary" onClick={onEdit} style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}>Editar</button>
+            )}
+            <button className="btn" onClick={onClose} style={{ padding: '0.25rem' }}><X size={18} /></button>
+          </div>
         </div>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

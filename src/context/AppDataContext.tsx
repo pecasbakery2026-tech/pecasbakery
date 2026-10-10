@@ -12,6 +12,7 @@ interface AppDataContextType {
   employees: Employee[];
   loading: boolean;
   addSale: (sale: Omit<Sale, 'id' | 'date'>, isVendor?: boolean) => Promise<void>;
+  updateSale: (id: string, sale: Sale) => Promise<void>;
   updateProductStock: (productId: string, quantity: number, isVendor?: boolean) => Promise<void>;
   addExpense: (expense: Omit<Expense, 'id' | 'date'>) => Promise<void>;
   addRawMaterial: (rm: Omit<RawMaterial, 'id'>) => Promise<void>;
@@ -122,12 +123,13 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
   }, []);
   
   const updateProductStock = async (productId: string, quantitySold: number, isVendor: boolean = false) => {
+    // We update Supabase first
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
     let updates: any = {};
     const newStock = Math.max(0, product.stock - quantitySold);
-    const status = newStock === 0 ? 'Agotado' : 'Disponible';
+    const status = newStock <= 0 ? 'Agotado' : 'Disponible';
     
     if (isVendor) {
       const newVendorStock = Math.max(0, (product.vendorStock || 0) - quantitySold);
@@ -140,17 +142,21 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
       await supabase.from('products').update(updates).eq('id', productId);
     }
 
+    // Ensure state updates are based on previous state to avoid race conditions in loops
     setProducts(prev => prev.map(p => {
       if (p.id !== productId) return p;
+      const updatedStock = Math.max(0, p.stock - quantitySold);
+      const updatedStatus = updatedStock <= 0 ? 'Agotado' : 'Disponible';
+      
       if (isVendor) {
         return { 
           ...p, 
           vendorStock: Math.max(0, (p.vendorStock || 0) - quantitySold),
-          stock: newStock,
-          status
+          stock: updatedStock,
+          status: updatedStatus
         };
       } else {
-        return { ...p, stock: newStock, status };
+        return { ...p, stock: updatedStock, status: updatedStatus };
       }
     }));
   };
@@ -196,6 +202,47 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     for (const item of saleData.items) {
       await updateProductStock(item.productId, item.quantity, isVendor);
     }
+  };
+
+  const updateSale = async (id: string, updatedSale: Sale) => {
+    const oldSale = sales.find(s => s.id === id);
+    if (!oldSale) return;
+
+    const isVendor = !!oldSale.sellerName && oldSale.sellerName !== 'Admin';
+
+    // 1. Revert old inventory
+    for (const item of oldSale.items) {
+      await updateProductStock(item.productId, -item.quantity, isVendor);
+    }
+
+    // 2. Apply new inventory
+    for (const item of updatedSale.items) {
+      await updateProductStock(item.productId, item.quantity, isVendor);
+    }
+
+    // 3. Update Supabase
+    if (hasSupabaseConfig) {
+      await supabase.from('sales').update({
+        total: updatedSale.total,
+        totalcost: updatedSale.totalCost,
+        paymentmethod: updatedSale.paymentMethod,
+        customertype: updatedSale.customerType,
+        sellername: updatedSale.sellerName
+      }).eq('id', id);
+
+      await supabase.from('sale_items').delete().eq('sale_id', id);
+      const itemsToInsert = updatedSale.items.map(item => ({
+        sale_id: id,
+        product_id: item.productId,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+        subtotal: item.subtotal
+      }));
+      await supabase.from('sale_items').insert(itemsToInsert);
+    }
+
+    // 4. Update state
+    setSales(prev => prev.map(s => s.id === id ? updatedSale : s));
   };
 
   const addExpense = async (expenseData: Omit<Expense, 'id' | 'date'>) => {
@@ -351,6 +398,7 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
       employees,
       loading,
       addSale,
+      updateSale,
       updateProductStock,
       addExpense,
       addRawMaterial,
