@@ -99,6 +99,7 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
             totalCost: sale.totalcost ?? sale.totalCost ?? 0,
             paymentMethod: sale.paymentmethod ?? sale.paymentMethod,
             customerType: sale.customertype ?? sale.customerType,
+            sellerName: sale.sellername ?? sale.sellerName,
             items: saleItemsData
               .filter(item => item.sale_id === sale.id)
               .map(item => ({
@@ -166,7 +167,8 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
           total: saleData.total, 
           totalcost: saleData.totalCost, 
           paymentmethod: saleData.paymentMethod, 
-          customertype: saleData.customerType 
+          customertype: saleData.customerType,
+          sellername: saleData.sellerName
         })
         .select()
         .single();

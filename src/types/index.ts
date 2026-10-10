@@ -57,6 +57,7 @@ export interface Sale {
   totalCost: number;
   paymentMethod: 'Efectivo' | 'Transferencia' | 'Tarjeta';
   customerType: 'Mostrador' | 'Pedido especial' | 'Evento';
+  sellerName?: string;
 }
 
 export interface Expense {

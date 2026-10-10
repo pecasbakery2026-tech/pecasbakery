@@ -123,7 +123,7 @@ const Finance = () => {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Vendedor</th>
                 <th>Fecha</th>
                 <th>Método de Pago</th>
                 <th>Artículos</th>
@@ -137,7 +137,7 @@ const Finance = () => {
                 const profit = s.total - s.totalCost;
                 return (
                   <tr key={s.id}>
-                    <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{s.id}</td>
+                    <td style={{ fontWeight: 500 }}>{s.sellerName || 'Admin'}</td>
                     <td>{new Date(s.date).toLocaleDateString()} {new Date(s.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                     <td>
                       <span className="badge" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>

@@ -61,7 +61,8 @@ const POS = () => {
       total,
       totalCost,
       paymentMethod,
-      customerType
+      customerType,
+      sellerName: user?.name
     }, isVendor);
     
     setCart([]);

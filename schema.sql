@@ -29,7 +29,8 @@ CREATE TABLE sales (
   total NUMERIC NOT NULL DEFAULT 0,
   totalCost NUMERIC NOT NULL DEFAULT 0,
   paymentMethod TEXT NOT NULL,
-  customerType TEXT NOT NULL
+  customerType TEXT NOT NULL,
+  sellerName TEXT
 );
 
 -- Tabla de Detalles de Venta (Items)
