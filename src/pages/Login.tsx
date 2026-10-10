@@ -6,7 +6,7 @@ import { Lock } from 'lucide-react';
 
 const Login = () => {
   const { login } = useAuth();
-  const { employees } = useAppData();
+  const { employees, loading } = useAppData();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -17,12 +17,18 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
+    if (loading) {
+      setError('Conectando a la base de datos... intenta en unos segundos.');
+      return;
+    }
+
     if (isDemo) {
       const role = username.includes('admin') ? 'ADMIN' : 'EMPLOYEE';
       login(username || 'admin', role === 'ADMIN' ? 'Admin User' : 'Vendedor', role);
       navigate('/');
     } else {
-      const emp = employees.find(e => e.username === username && e.password === password);
+      const searchUsername = username.trim().toLowerCase();
+      const emp = employees.find(e => (e.username || '').trim().toLowerCase() === searchUsername && e.password === password);
       if (emp) {
         login(emp.username || emp.name, emp.name, emp.role as any);
         navigate('/');
