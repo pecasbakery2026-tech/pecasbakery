@@ -12,6 +12,9 @@ interface AppDataContextType {
   addSale: (sale: Omit<Sale, 'id' | 'date'>) => Promise<void>;
   updateProductStock: (productId: string, quantity: number) => Promise<void>;
   addExpense: (expense: Omit<Expense, 'id' | 'date'>) => Promise<void>;
+  addRawMaterial: (rm: Omit<RawMaterial, 'id'>) => Promise<void>;
+  updateRawMaterial: (id: string, rm: Partial<RawMaterial>) => Promise<void>;
+  deleteRawMaterial: (id: string) => Promise<void>;
 }
 
 const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
@@ -152,6 +155,30 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     setExpenses(prev => [newExpense, ...prev]);
   };
 
+  const addRawMaterial = async (rmData: Omit<RawMaterial, 'id'>) => {
+    let newId = `rm_${Date.now()}`;
+    if (hasSupabaseConfig) {
+      const { data, error } = await supabase.from('raw_materials').insert(rmData).select().single();
+      if (!error && data) newId = data.id;
+    }
+    const newRm: RawMaterial = { ...rmData, id: newId };
+    setRawMaterials(prev => [newRm, ...prev]);
+  };
+
+  const updateRawMaterial = async (id: string, updates: Partial<RawMaterial>) => {
+    if (hasSupabaseConfig) {
+      await supabase.from('raw_materials').update(updates).eq('id', id);
+    }
+    setRawMaterials(prev => prev.map(rm => rm.id === id ? { ...rm, ...updates } : rm));
+  };
+
+  const deleteRawMaterial = async (id: string) => {
+    if (hasSupabaseConfig) {
+      await supabase.from('raw_materials').delete().eq('id', id);
+    }
+    setRawMaterials(prev => prev.filter(rm => rm.id !== id));
+  };
+
   return (
     <AppDataContext.Provider value={{
       rawMaterials,
@@ -161,7 +188,10 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
       loading,
       addSale,
       updateProductStock,
-      addExpense
+      addExpense,
+      addRawMaterial,
+      updateRawMaterial,
+      deleteRawMaterial
     }}>
       {children}
     </AppDataContext.Provider>
