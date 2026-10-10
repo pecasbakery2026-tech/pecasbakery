@@ -15,6 +15,9 @@ interface AppDataContextType {
   addRawMaterial: (rm: Omit<RawMaterial, 'id'>) => Promise<void>;
   updateRawMaterial: (id: string, rm: Partial<RawMaterial>) => Promise<void>;
   deleteRawMaterial: (id: string) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
 }
 
 const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
@@ -217,6 +220,42 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     setRawMaterials(prev => prev.filter(rm => rm.id !== id));
   };
 
+  const addProduct = async (prodData: Omit<Product, 'id'>) => {
+    let newId = `p_${Date.now()}`;
+    if (hasSupabaseConfig) {
+      const { data, error } = await supabase.from('products').insert({
+        name: prodData.name,
+        category: prodData.category,
+        price: prodData.price,
+        estimatedcost: prodData.estimatedCost,
+        stock: prodData.stock,
+        status: prodData.status,
+        image: prodData.image
+      }).select().single();
+      if (!error && data) newId = data.id;
+    }
+    const newProd: Product = { ...prodData, id: newId };
+    setProducts(prev => [newProd, ...prev]);
+  };
+
+  const updateProduct = async (id: string, updates: Partial<Product>) => {
+    if (hasSupabaseConfig) {
+      const mappedUpdates: any = { ...updates };
+      if (updates.estimatedCost !== undefined) mappedUpdates.estimatedcost = updates.estimatedCost;
+      delete mappedUpdates.estimatedCost;
+
+      await supabase.from('products').update(mappedUpdates).eq('id', id);
+    }
+    setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+  };
+
+  const deleteProduct = async (id: string) => {
+    if (hasSupabaseConfig) {
+      await supabase.from('products').delete().eq('id', id);
+    }
+    setProducts(prev => prev.filter(p => p.id !== id));
+  };
+
   return (
     <AppDataContext.Provider value={{
       rawMaterials,
@@ -229,7 +268,10 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
       addExpense,
       addRawMaterial,
       updateRawMaterial,
-      deleteRawMaterial
+      deleteRawMaterial,
+      addProduct,
+      updateProduct,
+      deleteProduct
     }}>
       {children}
     </AppDataContext.Provider>
