@@ -6,7 +6,7 @@ import EditSaleModal from '../components/EditSaleModal';
 import type { Sale } from '../types';
 
 const Finance = () => {
-  const { sales, expenses, addExpense } = useAppData();
+  const { sales, expenses, addExpense, deleteSale } = useAppData();
   const [dateFilter, setDateFilter] = useState<'Hoy' | 'Semana' | 'Mes' | 'Todos'>('Todos');
   const [activeTab, setActiveTab] = useState<'sales' | 'expenses'>('sales');
   
@@ -201,6 +201,12 @@ const Finance = () => {
           sale={selectedSale} 
           onClose={() => setSelectedSale(null)} 
           onEdit={() => setEditingSale(selectedSale)}
+          onDelete={async () => {
+            if (confirm('¿Estás seguro que deseas eliminar esta venta? El inventario será devuelto.')) {
+              await deleteSale(selectedSale.id);
+              setSelectedSale(null);
+            }
+          }}
         />
       )}
 

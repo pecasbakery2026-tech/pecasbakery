@@ -13,6 +13,7 @@ interface AppDataContextType {
   loading: boolean;
   addSale: (sale: Omit<Sale, 'id' | 'date'>, isVendor?: boolean) => Promise<void>;
   updateSale: (id: string, sale: Sale) => Promise<void>;
+  deleteSale: (id: string) => Promise<void>;
   updateProductStock: (productId: string, quantity: number, isVendor?: boolean) => Promise<void>;
   addExpense: (expense: Omit<Expense, 'id' | 'date'>) => Promise<void>;
   addRawMaterial: (rm: Omit<RawMaterial, 'id'>) => Promise<void>;
@@ -245,6 +246,26 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
     setSales(prev => prev.map(s => s.id === id ? updatedSale : s));
   };
 
+  const deleteSale = async (id: string) => {
+    const saleToDelete = sales.find(s => s.id === id);
+    if (!saleToDelete) return;
+
+    const isVendor = !!saleToDelete.sellerName && saleToDelete.sellerName !== 'Admin';
+
+    // 1. Revert inventory
+    for (const item of saleToDelete.items) {
+      await updateProductStock(item.productId, -item.quantity, isVendor);
+    }
+
+    // 2. Delete from Supabase
+    if (hasSupabaseConfig) {
+      await supabase.from('sales').delete().eq('id', id);
+    }
+
+    // 3. Update state
+    setSales(prev => prev.filter(s => s.id !== id));
+  };
+
   const addExpense = async (expenseData: Omit<Expense, 'id' | 'date'>) => {
     const date = new Date().toISOString();
     let newExpenseId = `e_${Date.now()}`;
@@ -399,6 +420,7 @@ export const AppDataProvider = ({ children }: { children: React.ReactNode }) => 
       loading,
       addSale,
       updateSale,
+      deleteSale,
       updateProductStock,
       addExpense,
       addRawMaterial,

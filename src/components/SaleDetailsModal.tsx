@@ -6,9 +6,10 @@ interface SaleDetailsModalProps {
   sale: Sale;
   onClose: () => void;
   onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-const SaleDetailsModal = ({ sale, onClose, onEdit }: SaleDetailsModalProps) => {
+const SaleDetailsModal = ({ sale, onClose, onEdit, onDelete }: SaleDetailsModalProps) => {
   const { products } = useAppData();
 
   return (
@@ -19,6 +20,9 @@ const SaleDetailsModal = ({ sale, onClose, onEdit }: SaleDetailsModalProps) => {
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             {onEdit && (
               <button className="btn btn-secondary" onClick={onEdit} style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}>Editar</button>
+            )}
+            {onDelete && (
+              <button className="btn btn-secondary" onClick={onDelete} style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem', color: 'var(--status-danger)', borderColor: 'var(--status-danger)' }}>Eliminar</button>
             )}
             <button className="btn" onClick={onClose} style={{ padding: '0.25rem' }}><X size={18} /></button>
           </div>
