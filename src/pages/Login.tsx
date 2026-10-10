@@ -41,7 +41,7 @@ const Login = () => {
       <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '2.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ display: 'inline-flex', padding: '0', backgroundColor: 'transparent', borderRadius: '50%', marginBottom: '1rem', width: '80px', height: '80px', overflow: 'hidden' }}>
-            <img src="/logo.jpg" alt="Pecas Bakery Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={`${import.meta.env.BASE_URL}logo.jpg`} alt="Pecas Bakery Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <h1 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Pecas Bakery</h1>
           <p style={{ color: 'var(--text-muted)' }}>Sistema de Gestión</p>

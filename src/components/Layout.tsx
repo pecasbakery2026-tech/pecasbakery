@@ -37,7 +37,7 @@ const Layout = () => {
       <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', padding: '0 0.5rem' }}>
           <div style={{ backgroundColor: 'transparent', padding: '0', borderRadius: '50%', width: '40px', height: '40px', overflow: 'hidden' }}>
-            <img src="/logo.jpg" alt="Pecas Bakery Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={`${import.meta.env.BASE_URL}logo.jpg`} alt="Pecas Bakery Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <h2 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-primary)' }}>Pecas Bakery</h2>
         </div>
