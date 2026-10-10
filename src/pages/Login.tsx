@@ -10,7 +10,6 @@ const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isDemo, setIsDemo] = useState(true);
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,19 +21,18 @@ const Login = () => {
       return;
     }
 
-    if (isDemo) {
-      const role = username.includes('admin') ? 'ADMIN' : 'EMPLOYEE';
-      login(username || 'admin', role === 'ADMIN' ? 'Admin User' : 'Vendedor', role);
+    const searchUsername = username.trim().toLowerCase();
+    const emp = employees.find(e => (e.username || '').trim().toLowerCase() === searchUsername && e.password === password);
+    
+    if (emp) {
+      login(emp.username || emp.name, emp.name, emp.role as any);
+      navigate('/');
+    } else if (searchUsername === 'admin' && password === 'qazwsxedc') {
+      // Admin fallback
+      login('admin', 'Administrador Principal', 'ADMIN');
       navigate('/');
     } else {
-      const searchUsername = username.trim().toLowerCase();
-      const emp = employees.find(e => (e.username || '').trim().toLowerCase() === searchUsername && e.password === password);
-      if (emp) {
-        login(emp.username || emp.name, emp.name, emp.role as any);
-        navigate('/');
-      } else {
-        setError('Usuario o contraseña incorrectos');
-      }
+      setError('Usuario o contraseña incorrectos');
     }
   };
 
@@ -74,15 +72,11 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               style={{ width: '100%' }}
-              required={!isDemo}
+              required
             />
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-              <input type="checkbox" checked={isDemo} onChange={() => setIsDemo(!isDemo)} />
-              Modo Demo (Login rápido)
-            </label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', fontSize: '0.875rem' }}>
             <a href="#" style={{ color: 'var(--accent-primary)' }}>¿Olvidaste tu contraseña?</a>
           </div>
 
@@ -92,15 +86,6 @@ const Login = () => {
           </button>
         </form>
 
-        {isDemo && (
-          <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', fontSize: '0.875rem' }}>
-            <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Accesos de prueba:</p>
-            <ul style={{ paddingLeft: '1.5rem', color: 'var(--text-secondary)' }}>
-              <li><strong>Admin:</strong> admin</li>
-              <li><strong>Vendedor:</strong> vendedor</li>
-            </ul>
-          </div>
-        )}
       </div>
     </div>
   );
